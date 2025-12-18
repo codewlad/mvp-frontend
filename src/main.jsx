@@ -1,31 +1,36 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import { useEffect, useState } from "react";
 
 function App() {
-  const [users, setUsers] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  React.useEffect(() => {
-    fetch(import.meta.env.VITE_API_URL + "/users")
-      .then((res) => res.json())
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/users`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Erro ao buscar usuários");
+        return res.json();
+      })
       .then((data) => {
         setUsers(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
         setLoading(false);
       });
   }, []);
 
   if (loading) return <p>Carregando...</p>;
+  if (error) return <p>Erro: {error}</p>;
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>Usuários do banco 🚀</h1>
-
-      {users.length === 0 && <p>Nenhum usuário encontrado</p>}
-
+      <h1>Usuários</h1>
       <ul>
         {users.map((user) => (
           <li key={user.id}>
-            <strong>{user.name}</strong> — {user.email}
+            {user.name} — {user.email}
           </li>
         ))}
       </ul>
@@ -33,4 +38,4 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+export default App;
